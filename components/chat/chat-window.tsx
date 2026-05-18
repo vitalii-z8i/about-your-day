@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import type { Message } from "@/src/domain/entities";
 import type { Conversation } from "@/src/domain/entities";
 import MessageInput from "./message-input";
+import { MessageRole } from "@/src/domain/enums";
 
 type Props = {
   chatId: string;
@@ -12,48 +13,31 @@ type Props = {
   conversation: Conversation | null;
 };
 
-type LocalMessage = {
-  id: string;
-  role: "user" | "assistant" | "system";
-  text: string;
-};
-
-function toLocal(m: Message): LocalMessage {
-  return {
-    id: m.id,
-    role: m.role as "user" | "assistant",
-    text: m.messageText,
-  };
-}
-
-function buildInitialMessages(
-  conversation: Conversation | null,
-): LocalMessage[] {
-  if (!conversation) return [];
-  const msgs = conversation.messages.map(toLocal);
-  if (conversation.finished) {
-    msgs.push({
-      id: "system-finished",
-      role: "system",
-      text: "This conversation is finished",
-    });
-  } else if (Date.now() - conversation.startedAt.getTime() > 8.64e7) {
-    msgs.push({
-      id: "system-expired",
-      role: "system",
-      text: "This conversation is about one of the past days. Start a new chat to tell about your day today",
-    });
-  }
-  return msgs;
-}
-
 export default function ChatWindow({ chatId, userName, conversation }: Props) {
   const router = useRouter();
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const [messages, setMessages] = useState<LocalMessage[]>(
-    buildInitialMessages(conversation),
-  );
+  const [messages, setMessages] = useState<Message[]>(() => {
+    if (!conversation) return [];
+    const msgs = [...conversation.messages];
+    if (conversation.finished) {
+      msgs.push({
+        id: "system-finished",
+        role: MessageRole.System,
+        messageText: "This conversation is finished",
+        createdAt: new Date(),
+      });
+    } else if (Date.now() - conversation.startedAt.getTime() > 8.64e7) {
+      msgs.push({
+        id: "system-expired",
+        role: MessageRole.System,
+        messageText:
+          "This conversation is about one of the past days. Start a new chat to tell about your day today",
+        createdAt: new Date(),
+      });
+    }
+    return msgs;
+  });
   const [streamingText, setStreamingText] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [isFinished, setIsFinished] = useState(conversation?.finished ?? false);
@@ -63,10 +47,6 @@ export default function ChatWindow({ chatId, userName, conversation }: Props) {
   }, [messages, streamingText]);
 
   async function sendMessage(text: string) {
-    setMessages((prev) => [
-      ...prev,
-      { id: crypto.randomUUID(), role: "user", text },
-    ]);
     setIsStreaming(true);
     setStreamingText("");
 
@@ -77,6 +57,8 @@ export default function ChatWindow({ chatId, userName, conversation }: Props) {
         body: JSON.stringify({ message: text }),
       });
       const updatedConversation = await msgRes.json();
+      setMessages((prev) => [...prev, updatedConversation.messages.at(-1)]);
+
       const conversationFinished = Boolean(updatedConversation.finished);
 
       const streamRes = await fetch(`/api/conversations/${chatId}/stream`);
@@ -94,16 +76,20 @@ export default function ChatWindow({ chatId, userName, conversation }: Props) {
         setStreamingText(full);
       }
 
+      const aiMsg: Message = {
+        id: crypto.randomUUID(),
+        role: MessageRole.Assistant,
+        messageText: full,
+        createdAt: new Date(),
+      };
       setMessages((prev) => {
-        const next: LocalMessage[] = [
-          ...prev,
-          { id: crypto.randomUUID(), role: "assistant", text: full },
-        ];
+        const next: Message[] = [...prev, aiMsg];
         if (conversationFinished) {
           next.push({
             id: "system-finished",
-            role: "system",
-            text: "This conversation is finished",
+            role: MessageRole.System,
+            messageText: "This conversation is finished",
+            createdAt: new Date(),
           });
         }
         return next;
@@ -113,14 +99,13 @@ export default function ChatWindow({ chatId, userName, conversation }: Props) {
       router.refresh();
     } catch (err) {
       console.error(err);
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: crypto.randomUUID(),
-          role: "assistant",
-          text: "Something went wrong. Please try again.",
-        },
-      ]);
+      const errMsg: Message = {
+        id: crypto.randomUUID(),
+        role: MessageRole.Assistant,
+        messageText: "Something went wrong. Please try again.",
+        createdAt: new Date(),
+      };
+      setMessages((prev) => [...prev, errMsg]);
       setStreamingText("");
     } finally {
       setIsStreaming(false);
@@ -142,26 +127,28 @@ export default function ChatWindow({ chatId, userName, conversation }: Props) {
           )}
 
           {messages.map((m) => {
-            if (m.role === "system") {
+            if (m.role === MessageRole.System) {
               return (
                 <div key={m.id} className="flex justify-center py-2">
-                  <span className="text-xs text-stone-400">{m.text}</span>
+                  <span className="text-xs text-stone-400">
+                    {m.messageText}
+                  </span>
                 </div>
               );
             }
             return (
               <div
                 key={m.id}
-                className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
+                className={`flex ${m.role === MessageRole.User ? "justify-end" : "justify-start"}`}
               >
                 <div
                   className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
-                    m.role === "user"
+                    m.role === MessageRole.User
                       ? "bg-stone-900 text-white rounded-tr-sm"
                       : "bg-white text-stone-900 rounded-tl-sm"
                   }`}
                 >
-                  {m.text}
+                  {m.messageText}
                 </div>
               </div>
             );

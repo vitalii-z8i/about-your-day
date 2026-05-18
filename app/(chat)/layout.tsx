@@ -20,7 +20,9 @@ export default async function ChatLayout({
         style={{ width: 260 }}
       >
         <div className="px-4 pt-5 pb-3">
-          <span className="text-sm font-medium text-stone-900">About Your Day</span>
+          <h1 className="text-center font-medium text-stone-900">
+            About Your <span className="text-[#4a6741] font-bold">Day</span>
+          </h1>
         </div>
         <Sidebar conversations={conversations} />
       </aside>

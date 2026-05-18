@@ -13,8 +13,15 @@ import FindConversation from "@/src/application/use-cases/conversation/find";
 import AddMessage from "@/src/application/use-cases/conversation/addMessage";
 import RespondToMessage from "@/src/application/use-cases/conversation/respondToMessage";
 
-import { UserDTOValidator, LoginUserDTOValidator, MessageValidator } from "@/src/infrastructure/validation/zod";
-import { LoginUser as LoginUserAction, RegisterUser as RegisterUserAction } from "@/src/presentation/actions/auth";
+import {
+  UserDTOValidator,
+  LoginUserDTOValidator,
+  MessageValidator,
+} from "@/src/infrastructure/validation/zod";
+import {
+  LoginUser as LoginUserAction,
+  RegisterUser as RegisterUserAction,
+} from "@/src/presentation/actions/auth";
 import NewMessageAction from "@/src/presentation/actions/conversation/newMessage";
 import RespondToMessageAction from "@/src/presentation/actions/conversation/respondToMessage";
 
@@ -48,19 +55,29 @@ export const container = {
   },
   actions: {
     auth: {
-      register: () => new RegisterUserAction(new RegisterUser(userRepo, encryptionService), userDTOValidator),
-      login: () => new LoginUserAction(new LoginUser(userRepo, encryptionService, tokenService), loginUserDTOValidator),
+      register: () =>
+        new RegisterUserAction(
+          new RegisterUser(userRepo, encryptionService),
+          userDTOValidator,
+        ),
+      login: () =>
+        new LoginUserAction(
+          new LoginUser(userRepo, encryptionService, tokenService),
+          loginUserDTOValidator,
+        ),
     },
     conversation: {
-      newMessage: () => new NewMessageAction(
-        new AuthenticateUser(tokenService, userRepo),
-        new AddMessage(convRepo, idService, aiService as never),
-        messageValidator,
-      ),
-      respondToMessage: () => new RespondToMessageAction(
-        new FindConversation(convRepo),
-        new RespondToMessage(convRepo, idService, aiService as never),
-      ),
+      newMessage: () =>
+        new NewMessageAction(
+          new AuthenticateUser(tokenService, userRepo),
+          new AddMessage(convRepo, idService, aiService as never),
+          messageValidator,
+        ),
+      respondToMessage: () =>
+        new RespondToMessageAction(
+          new FindConversation(convRepo),
+          new RespondToMessage(convRepo, idService, aiService as never),
+        ),
     },
   },
 };

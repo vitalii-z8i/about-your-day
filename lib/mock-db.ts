@@ -6,13 +6,6 @@ type MockDB = {
   conversations: Conversation[];
 };
 
-declare global {
-  // eslint-disable-next-line no-var
-  var __mockDb: MockDB | undefined;
-}
-
-const db: MockDB =
-  globalThis.__mockDb ??
-  (globalThis.__mockDb = { users: [], conversations: [] });
+const db: MockDB = { users: [], conversations: [] };
 
 export default db;

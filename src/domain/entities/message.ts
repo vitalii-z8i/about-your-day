@@ -5,5 +5,4 @@ export type Message = {
   messageText: string;
   role: MessageRole;
   createdAt: Date;
-  metadata?: Record<string, string>;
 };

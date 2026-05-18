@@ -27,9 +27,6 @@ export default function Sidebar({ conversations }: Props) {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <div className="px-4 pt-5 pb-3 border-b border-stone-100 flex flex-col gap-3">
-        <h1 className="text-sm font-medium tracking-tight text-stone-900 text-center">
-          About your day
-        </h1>
         <Link
           href="/chats"
           className="flex items-center justify-center w-full py-2 px-3 text-sm font-medium text-white rounded-lg transition-opacity hover:opacity-90"
@@ -56,7 +53,7 @@ export default function Sidebar({ conversations }: Props) {
                 }`}
               >
                 <span className="text-sm text-stone-900 truncate leading-snug">
-                  {conv.summary ?? "New conversation"}
+                  {conv.summary ?? "[New conversation]"}
                 </span>
                 <span className="text-xs text-stone-400 mt-0.5">
                   {relativeTime(conv.startedAt)}

@@ -46,11 +46,13 @@ export default class AddMessage {
       Object.assign(conversation, updatePayload);
     }
 
-    await this.conversationRepo.addMessage(conversationId, {
-      id: this.idService.generateId(),
-      role: MessageRole.User,
-      messageText: message,
-    });
+    conversation.messages.push(
+      await this.conversationRepo.addMessage(conversationId, {
+        id: this.idService.generateId(),
+        role: MessageRole.User,
+        messageText: message,
+      }),
+    );
 
     return conversation;
   }
