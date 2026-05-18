@@ -1,0 +1,23 @@
+services:
+  app:
+    build:
+      context: .
+      target: development
+    env_file: .env
+    volumes:
+      - .:/app
+    ports:
+      - 3000:3000
+
+  # db:
+  #   image: mysql
+  #   env_file: db.env
+  #   restart: always
+  #   volumes:
+  #     - ./db/:/var/lib/mysql
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
