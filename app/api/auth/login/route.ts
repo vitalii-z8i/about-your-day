@@ -3,22 +3,15 @@ import { cookies } from "next/headers";
 import { container } from "@/src/infrastructure/composition/container";
 import { MockTokenService } from "@/src/infrastructure/services/mock/token";
 import AuthError from "@/src/application/errors/auth";
+import ValidationError from "@/src/presentation/errors/validation";
 
 const tokenService = new MockTokenService();
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, password } = body as { email: string; password: string };
 
-    if (!email || !password) {
-      return NextResponse.json(
-        { error: "Email and password are required" },
-        { status: 400 }
-      );
-    }
-
-    const token = await container.user.login().execute({ email, password });
+    const token = await container.actions.auth.login().call(body);
     const user = await tokenService.verify(token);
 
     const cookieStore = await cookies();
@@ -32,6 +25,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ user });
   } catch (err) {
+    if (err instanceof ValidationError) {
+      return NextResponse.json({ errors: err.details }, { status: 400 });
+    }
     if (err instanceof AuthError) {
       return NextResponse.json({ error: err.message }, { status: 401 });
     }

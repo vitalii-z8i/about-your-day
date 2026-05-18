@@ -1,8 +1,11 @@
 import { Message } from "@/src/domain/entities";
-import type { NewMessageResponse } from "@/src/application/use-cases/conversation/conversation.types";
+import { GeneratedMessageResponse } from "../../use-cases/conversation/conversation.types";
 
 export interface IAiService {
   createTitle(message: string): Promise<string>;
-  streamResponse(messages: Message[], finished: boolean): Promise<NewMessageResponse>;
+  streamResponse(
+    messages: Message[],
+    finished: boolean,
+  ): Promise<GeneratedMessageResponse>;
   extractNegativeEmotions(messages: Message[]): Promise<string[]>;
 }

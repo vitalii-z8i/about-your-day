@@ -7,8 +7,10 @@ export class MockUserRepository implements IUserRepository {
   async exists(query: { id?: string; email?: string }): Promise<boolean> {
     return db.users.some(
       (u) =>
-        (query.id !== undefined && u.id === query.id) ||
-        (query.email !== undefined && u.email === query.email)
+        query.id !== undefined &&
+        u.id === query.id &&
+        query.email !== undefined &&
+        u.email === query.email,
     );
   }
 

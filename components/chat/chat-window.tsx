@@ -19,14 +19,30 @@ type LocalMessage = {
 };
 
 function toLocal(m: Message): LocalMessage {
-  return { id: m.id, role: m.role as "user" | "assistant", text: m.messageText };
+  return {
+    id: m.id,
+    role: m.role as "user" | "assistant",
+    text: m.messageText,
+  };
 }
 
-function buildInitialMessages(conversation: Conversation | null): LocalMessage[] {
+function buildInitialMessages(
+  conversation: Conversation | null,
+): LocalMessage[] {
   if (!conversation) return [];
   const msgs = conversation.messages.map(toLocal);
   if (conversation.finished) {
-    msgs.push({ id: "system-finished", role: "system", text: "This conversation is finished" });
+    msgs.push({
+      id: "system-finished",
+      role: "system",
+      text: "This conversation is finished",
+    });
+  } else if (Date.now() - conversation.startedAt.getTime() > 8.64e7) {
+    msgs.push({
+      id: "system-expired",
+      role: "system",
+      text: "This conversation is about one of the past days. Start a new chat to tell about your day today",
+    });
   }
   return msgs;
 }
@@ -36,7 +52,7 @@ export default function ChatWindow({ chatId, userName, conversation }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const [messages, setMessages] = useState<LocalMessage[]>(
-    buildInitialMessages(conversation)
+    buildInitialMessages(conversation),
   );
   const [streamingText, setStreamingText] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
@@ -84,7 +100,11 @@ export default function ChatWindow({ chatId, userName, conversation }: Props) {
           { id: crypto.randomUUID(), role: "assistant", text: full },
         ];
         if (conversationFinished) {
-          next.push({ id: "system-finished", role: "system", text: "This conversation is finished" });
+          next.push({
+            id: "system-finished",
+            role: "system",
+            text: "This conversation is finished",
+          });
         }
         return next;
       });
@@ -95,7 +115,11 @@ export default function ChatWindow({ chatId, userName, conversation }: Props) {
       console.error(err);
       setMessages((prev) => [
         ...prev,
-        { id: crypto.randomUUID(), role: "assistant", text: "Something went wrong. Please try again." },
+        {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          text: "Something went wrong. Please try again.",
+        },
       ]);
       setStreamingText("");
     } finally {
@@ -170,7 +194,10 @@ export default function ChatWindow({ chatId, userName, conversation }: Props) {
 
       <div className="px-4 pb-6 pt-2">
         <div className="max-w-2xl mx-auto">
-          <MessageInput onSend={sendMessage} disabled={isStreaming || isFinished} />
+          <MessageInput
+            onSend={sendMessage}
+            disabled={isStreaming || isFinished}
+          />
         </div>
       </div>
     </div>

@@ -15,8 +15,7 @@ export async function GET(
   const { id } = await params;
 
   try {
-    const conversation = await container.conversation.find().execute(id);
-    const stream = await container.conversation.respondToMessage().execute(conversation);
+    const stream = await container.actions.conversation.respondToMessage().call(id);
     return new Response(stream as unknown as ReadableStream<Uint8Array>, {
       headers: {
         "Content-Type": "text/plain; charset=utf-8",

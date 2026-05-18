@@ -3,6 +3,7 @@ import type { IConversationRepository } from "@/src/application/ports/data-acces
 import type { IIdService, IAiService } from "@/src/application/ports/services";
 import { MessageRole } from "@/src/domain/enums";
 import { JwtUser } from "@/src/application/use-cases/user/user.types";
+import { ConversationError } from "../../errors";
 
 export default class AddMessage {
   constructor(
@@ -27,8 +28,15 @@ export default class AddMessage {
       Object.assign(updatePayload, { summary });
     }
 
-    // Limit the conversation to 10 messages. 10th message being the summary from the AI service
-    if (conversation.messages.length >= 9) {
+    const conversationIsOld =
+      Date.now() - conversation.startedAt.getTime() > 8.64e7;
+    if (conversation.finished || conversationIsOld) {
+      throw new ConversationError("Conversation is already finished");
+    }
+
+    // Limit the conversation to 11 messages.
+    // 11th message being the summary from the AI service
+    if (conversation.messages.length >= 10) {
       Object.assign(updatePayload, { finished: true });
       await this;
     }
