@@ -35,3 +35,7 @@ Warm, editorial, minimal. No flashy effects. Premium feel through restraint.
 **Sidebar:** 260 px wide, white background, `border-r border-stone-200`. Active item has a left accent bar in sage green.
 
 **Chat area:** max-width `672px`, centered. Messages use rounded bubbles (`rounded-2xl`) with a flattened corner on the speaking side.
+
+## Project Setup & Infrastructure
+The project is dockerized using docker compose.
+to perform npm scripts and shell commands use `docker exec about-your-day-app-1 [command]`
