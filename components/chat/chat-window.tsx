@@ -279,7 +279,12 @@ export default function ChatWindow({ chatId, userName, conversation }: Props) {
 
       {/* Report sidebar */}
       {isReportOpen && (
-        <div className="w-80 border-l border-stone-200 bg-white flex flex-col shrink-0">
+        <>
+          <div
+            className="fixed inset-0 bg-black/20 z-40 md:hidden"
+            onClick={() => setIsReportOpen(false)}
+          />
+          <div className="fixed inset-y-0 right-0 z-50 md:relative md:inset-auto md:z-auto w-80 border-l border-stone-200 bg-white flex flex-col shrink-0">
           <div className="flex items-center justify-between px-5 py-4 border-b border-stone-200">
             <span className="text-sm font-medium text-stone-900 tracking-tight">
               Day report
@@ -333,6 +338,7 @@ export default function ChatWindow({ chatId, userName, conversation }: Props) {
             )}
           </div>
         </div>
+        </>
       )}
     </div>
   );
