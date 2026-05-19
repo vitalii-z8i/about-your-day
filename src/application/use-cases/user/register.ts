@@ -10,8 +10,10 @@ export default class RegisterUser {
     protected encryptionService: IEncryptionService,
   ) {}
 
-  async execute({ password, ...userData }: UserDTO): Promise<User> {
-    const emailExists = await this.repo.exists({ email: userData.email });
+  async execute({ password, email, name }: UserDTO): Promise<User> {
+    const emailExists = await this.repo.exists({
+      email: email.toLowerCase(),
+    });
     if (emailExists) {
       throw new AuthError("A user with this email already exists");
     }
@@ -20,7 +22,8 @@ export default class RegisterUser {
       await this.encryptionService.encrypt(password);
 
     const user: User = await this.repo.create({
-      ...userData,
+      name,
+      email: email.toLowerCase(),
       encryptedPassword,
     });
 

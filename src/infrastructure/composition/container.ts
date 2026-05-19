@@ -2,7 +2,8 @@ import { MongoUserRepository } from "@/src/infrastructure/data-access/mongo/user
 import { MongoConversationRepository } from "@/src/infrastructure/data-access/mongo/conversation";
 import { MockTokenService } from "@/src/infrastructure/services/mock/token";
 import { MockEncryptionService } from "@/src/infrastructure/services/mock/encryption";
-import { MockAiService } from "@/src/infrastructure/services/mock/ai";
+import { VercelAiService } from "@/src/infrastructure/services/vercel/ai";
+import type { IAiService } from "@/src/application/ports/services/IAiService";
 import { MockIdService } from "@/src/infrastructure/services/mock/id";
 
 import RegisterUser from "@/src/application/use-cases/user/register";
@@ -32,7 +33,7 @@ const convRepo = new MongoConversationRepository();
 /* Services */
 const tokenService = new MockTokenService();
 const encryptionService = new MockEncryptionService();
-const aiService = new MockAiService();
+const aiService: IAiService = new VercelAiService();
 const idService = new MockIdService();
 
 /* Validators */
@@ -49,9 +50,9 @@ export const container = {
   conversation: {
     list: () => new ListConversations(convRepo),
     find: () => new FindConversation(convRepo),
-    addMessage: () => new AddMessage(convRepo, idService, aiService as never),
+    addMessage: () => new AddMessage(convRepo, idService, aiService),
     respondToMessage: () =>
-      new RespondToMessage(convRepo, idService, aiService as never),
+      new RespondToMessage(convRepo, idService, aiService),
   },
   actions: {
     auth: {
@@ -70,13 +71,13 @@ export const container = {
       newMessage: () =>
         new NewMessageAction(
           new AuthenticateUser(tokenService, userRepo),
-          new AddMessage(convRepo, idService, aiService as never),
+          new AddMessage(convRepo, idService, aiService),
           messageValidator,
         ),
       respondToMessage: () =>
         new RespondToMessageAction(
           new FindConversation(convRepo),
-          new RespondToMessage(convRepo, idService, aiService as never),
+          new RespondToMessage(convRepo, idService, aiService),
         ),
     },
   },

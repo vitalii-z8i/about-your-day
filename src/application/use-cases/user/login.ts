@@ -14,7 +14,7 @@ export default class LoginUser {
   ) {}
 
   async execute({ email, password }: LoginUserDTO): Promise<string> {
-    const user = await this.repo.findByEmail(email);
+    const user = await this.repo.findByEmail(email.toLowerCase());
     if (!user) throw new AuthError("Invalid email or pass");
     const isPasswordValid = await this.encryptionService.compare(
       password,

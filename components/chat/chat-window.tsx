@@ -47,22 +47,23 @@ export default function ChatWindow({ chatId, userName, conversation }: Props) {
   }, [messages, streamingText]);
 
   async function sendMessage(text: string) {
-    setIsStreaming(true);
-    setStreamingText("");
-
     try {
       const msgRes = await fetch(`/api/conversations/${chatId}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: text }),
       });
+
       const updatedConversation = await msgRes.json();
       setMessages((prev) => [...prev, updatedConversation.messages.at(-1)]);
+      setIsStreaming(true);
+      setStreamingText("");
 
       const conversationFinished = Boolean(updatedConversation.finished);
 
       const streamRes = await fetch(`/api/conversations/${chatId}/stream`);
       if (!streamRes.body) throw new Error("No stream body");
+      if (!streamRes.ok) throw new Error((await streamRes.json()).error);
 
       const reader = streamRes.body.getReader();
       const decoder = new TextDecoder();
@@ -101,8 +102,9 @@ export default function ChatWindow({ chatId, userName, conversation }: Props) {
       console.error(err);
       const errMsg: Message = {
         id: crypto.randomUUID(),
-        role: MessageRole.Assistant,
-        messageText: "Something went wrong. Please try again.",
+        role: MessageRole.System,
+        messageText:
+          (err as Error)?.message || "Something went wrong. Please try again.",
         createdAt: new Date(),
       };
       setMessages((prev) => [...prev, errMsg]);

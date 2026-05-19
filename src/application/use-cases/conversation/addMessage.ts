@@ -24,8 +24,14 @@ export default class AddMessage {
 
     const updatePayload = {};
     if (!conversation.summary) {
-      const summary = await this.aiService.createTitle(message);
-      Object.assign(updatePayload, { summary });
+      try {
+        const summary = await this.aiService.createTitle(message);
+        Object.assign(updatePayload, { summary });
+      } catch (err) {
+        console.error("AI service error:", err);
+        const summary = `${message.substring(0, 10)}...`;
+        Object.assign(updatePayload, { summary });
+      }
     }
 
     const conversationIsOld =
@@ -38,7 +44,6 @@ export default class AddMessage {
     // 11th message being the summary from the AI service
     if (conversation.messages.length >= 10) {
       Object.assign(updatePayload, { finished: true });
-      await this;
     }
 
     if (Object.keys(updatePayload).length > 0) {
