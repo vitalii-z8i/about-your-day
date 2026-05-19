@@ -1,12 +1,11 @@
 import { NoRecordError } from "../../errors";
 import type { IConversationRepository, IReportRepository } from "@/src/application/ports/data-access";
-import type { IIdService, IAiService } from "@/src/application/ports/services";
+import type { IAiService } from "@/src/application/ports/services";
 
-export default class PrepareReport {
+export default class RemakeReport {
   constructor(
     protected conversationRepo: IConversationRepository,
     protected reportRepo: IReportRepository,
-    protected idService: IIdService,
     protected aiService: IAiService,
   ) {}
 
@@ -14,15 +13,13 @@ export default class PrepareReport {
     const conversation = await this.conversationRepo.findById(conversationId);
     if (!conversation) throw new NoRecordError("Conversation was not found");
 
+    const report = await this.reportRepo.fetchReport(conversationId);
+    if (!report) throw new NoRecordError("Report was not found");
+
     const negativeEmotions = await this.aiService.extractNegativeEmotions(
       conversation.messages,
     );
 
-    await this.reportRepo.create({
-      id: this.idService.generateId(),
-      conversationId,
-      userId: conversation.userId,
-      negativeEmotions,
-    });
+    await this.reportRepo.updateReport(report.id, { negativeEmotions });
   }
 }

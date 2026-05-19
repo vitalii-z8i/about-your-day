@@ -5,6 +5,7 @@ export type Conversation = {
   userId: string;
   finished: boolean;
   summary?: string;
+  reportId?: string;
   startedAt: Date;
   messages: Message[];
 };

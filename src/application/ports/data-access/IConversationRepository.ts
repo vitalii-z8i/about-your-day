@@ -4,7 +4,7 @@ import type { ConversationListItem } from "@/src/application/use-cases/conversat
 export interface IConversationRepository {
   listTitles(userId: string): Promise<ConversationListItem[]>;
   getOrCreate(conversationId: string, userId: string): Promise<Conversation>;
-  update(conversationId: string, payload: Partial<Pick<Conversation, "summary" | "finished">>): Promise<void>;
+  update(conversationId: string, payload: Partial<Pick<Conversation, "summary" | "finished" | "reportId">>): Promise<void>;
   addMessage(conversationId: string, message: Pick<Message, "id" | "role" | "messageText">): Promise<Message>;
   findById(conversationId: string): Promise<Conversation | undefined>;
 }

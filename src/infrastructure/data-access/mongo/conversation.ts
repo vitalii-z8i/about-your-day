@@ -12,6 +12,7 @@ type ConversationDocument = {
   userId: string;
   finished: boolean;
   summary?: string;
+  reportId?: string;
   startedAt: Date;
   messages: MessageDocument[];
 };

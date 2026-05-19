@@ -92,11 +92,18 @@ export class VercelAiService implements IAiService {
   }
 
   async extractNegativeEmotions(messages: Message[]): Promise<string[]> {
+    const processedMessages = toSdkMessages(messages);
+    if (
+      !!processedMessages.at(-1)?.role &&
+      processedMessages.at(-1)?.role !== MessageRole.User
+    ) {
+      processedMessages.splice(-1);
+    }
     const { object } = await generateObject({
       model: SONNET,
       system: SYSTEM_EMOTIONS,
       schema: z.object({ emotions: z.array(z.string()) }),
-      messages: toSdkMessages(messages),
+      messages: processedMessages,
     });
     return object.emotions;
   }
