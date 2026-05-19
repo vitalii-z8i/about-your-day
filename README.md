@@ -7,7 +7,7 @@ You can access the application [Here](https://about-your-day.vercel.app).
 
 ### Docker/Docker Compose
 ```bash
-/project/root/dir$ docker compose up
+docker compose up # or docker-compose up
 ```
 
 ### Prerequisites
@@ -19,8 +19,8 @@ You can access the application [Here](https://about-your-day.vercel.app).
 ### Launching the development server:
 
 ```bash
-/project/root/dir$ npm install
-/project/root/dir$ npm run dev
+npm install
+npm run dev
 ```
 
 ### Usage
